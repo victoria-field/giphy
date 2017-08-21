@@ -1,104 +1,93 @@
- var feeling = ["sad", "angry", "happy", "satisfied", "content"];
-      // Function for displaying feeling data
-      function renderButtons() {
-        // Deleting the feeling buttons prior to adding new feeling buttons
-        // (this is necessary otherwise we will have repeat buttons)
-        $("#buttonView").empty();
-        // Looping through the array of feeling
-        for (var i = 0; i < feeling.length; i++) {
-          // Then dynamicaly generating buttons for each feeling in the array.
-          // This code $("<button>") is all jQuery needs to create the start and end tag. (<button></button>)
-          var a = $("<button>");
-          // Adding a class
-          a.addClass("feel");
-          // Adding a data-attribute with a value of the movie at index i
-          a.attr("data-name", feeling[i]);
-          // Providing the button's text with a value of the movie at index i
-          a.text(feeling[i]);
-          // Adding the button to the HTML
-          $("#buttonView").append(a);
+ $( document ).ready(function() {
+// An array of actions, new actions will be pushed into this array;
+var feelings = ["happy", "sad", "scared", "fortunate", "confident", "playful", "confused", "shy", "angry", "content", "bored", "guilty", "furious"];
+// Creating Functions & Methods
+// Function that displays all gif buttons
+function displayGifButtons(){
+    $("#gifButtonsView").empty(); // erasing anything in this div id so that it doesnt duplicate the results
+    for (var i = 0; i < feelings.length; i++){
+        var gifButton = $("<button>");
+        gifButton.addClass("action");
+        gifButton.addClass("btn btn-primary")
+        gifButton.attr("data-name", feelings[i]);
+        gifButton.text(feelings[i]);
+        $("#gifButtonsView").append(gifButton);
+    }
+}
+// Function to add a new action button
+function addNewButton(){
+    $("#addGif").on("click", function(){
+    var feeling = $("#action-input").val().trim();
+    if (feeling == ""){
+      return false; // added so user cannot add a blank button
+    }
+    feelings.push(feeling);
+
+    displayGifButtons();
+    return false;
+    });
+}
+// Function to remove last action button
+    // Doesnt work properly yet removes all of the added buttons
+    // rather than just the last
+function removeLastButton(){
+    $("removeGif").on("click", function(){
+    feelingss.pop(feel);
+    displayGifButtons();
+    return false;
+    });
+}
+// Function that displays all of the gifs
+function displayGifs(){
+    var action = $(this).attr("data-name");
+    var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + action + "&api_key=bca0e4aeaf744d878081cf4727f2b867&limit=10";
+    console.log(queryURL); // displays the constructed url
+    $.ajax({
+        url: queryURL,
+        method: 'GET'
+    })
+    .done(function(response) {
+        console.log(response); // console test to make sure something returns
+        $("#gifsView").empty(); // erasing anything in this div id so that it doesnt keep any from the previous click
+        var results = response.data; //shows results of gifs
+        if (results == ""){
+          alert("There isn't a gif for this selected button");
         }
-      }
-      // This function handles events where one button is clicked
-      $("#add-feeling").on("click", function(event) {
-        // event.preventDefault() prevents the form from trying to submit itself.
-        // We're using a form so that the user can hit enter instead of clicking the button if they want
-        event.preventDefault();
-        // This line will grab the text from the input box
-        var feel = $("#gifInput").val().trim();
-        // The feeling from the textbox is then added to the array
-        feeling.push(feel);
-        // calling renderButtons which handles the processing of our movie array
-        renderButtons();
-      });
+        for (var i=0; i<results.length; i++){
 
-       // Calling the renderButtons function at least once to display the initial list of feeling
-      renderButtons();
-
-
-      $("#add-feeling").on("click", function() {
-        alert("click");
-      
-      // this is a problem
-       var felt = $(this).attr(feeling);
-       var api_key = "bca0e4aeaf744d878081cf4727f2b867";
-       var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + feeling +"&api_key=" + api_key + "&limit=10";
-
-       $.ajax({
-         url: queryURL,
-         method: "GET"
-
-
-       })
-     
-
-      .done(function(response) {
-        alert(response);
-
-        var results = response.data;
-
-       for (var i = 0; i < results.length; i++){
-         var gifDiv = $("<div class = 'gifs-appear-here1'>");
-         var rating = results[i].rating;
-         var p = $("<p>").text("Rating: " + rating);
-         var feelImage = $("<img>");
-         alert(results.length);
-                
-         var animateImage = results[i].images.fixed_height.url;
-         var staticImage = results[i].images.fixed_height_still.url;
-            
-
-         feelImage.attr("src", results[i].images.fixed_height.url);
-         alert(results[i].images.fixed_height.url);
-         feelImage.attr("data-state", "still");
-         feelImage.attr("data-still", staticImage);
-         feelImage.attr("data-animate", animateImage);
-
-         gifDiv.append(p);
-         alert("p");
-         gifDiv.append(feelImage);
-         alert(feelImage);
-
-         $(".gifs-appear-here").prepend(gifDiv);
-       }
-
-
-       });
+            var gifDiv = $("<div>"); //div for the gifs to go inside
+            gifDiv.addClass("gifDiv");
+            // pulling rating of gif
+            var gifRating = $("<p>").text("Rating: " + results[i].rating);
+            gifDiv.append(gifRating);
+            // pulling gif
+            var gifImage = $("<img>");
+            gifImage.attr("src", results[i].images.fixed_height_still.url); // still image stored into src of image
+            gifImage.attr("data-still",results[i].images.fixed_height_still.url); // still image
+            gifImage.attr("data-animate",results[i].images.fixed_height.url); // animated image
+            gifImage.attr("data-state", "still"); // set the image state
+            gifImage.addClass("image");
+            gifDiv.append(gifImage);
+            // pulling still image of gif
+            // adding div of gifs to gifsView div
+            $("#gifsView").prepend(gifDiv);
+        }
     });
-      $(".gifs-appear-here1").on("click", function() {
-        alert("img");
-      // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
-      var state = $(this).attr("data-state");
-      // If the clicked image's state is still, update its src attribute to what its data-animate value is.
-      // Then, set the image's data-state to animate
-      // Else set src to the data-still value
-      if (state === "still") {
-        $(this).attr("src", $(this).attr("data-animate"));
-        $(this).attr("data-state", "animate");
-        alert("still to animate");
-      } else {
-        $(this).attr("src", $(this).attr("data-still"));
-        $(this).attr("data-state", "still");
-        alert("animate to still");
-      }
-    });
+}
+// Calling Functions & Methods
+displayGifButtons(); // displays list of actions already created
+addNewButton();
+removeLastButton();
+// Document Event Listeners
+$(document).on("click", ".action", displayGifs);
+$(document).on("click", ".image", function(){
+    var state = $(this).attr('data-state');
+    if ( state == 'still'){
+        $(this).attr('src', $(this).data('animate'));
+        $(this).attr('data-state', 'animate');
+    }else{
+        $(this).attr('src', $(this).data('still'));
+        $(this).attr('data-state', 'still');
+    }
+});
+});

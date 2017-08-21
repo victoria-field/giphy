@@ -1,3 +1,8 @@
-<button>{
+
+#gifsView {
 	display: inline-block;
+}
+
+.container{
+	width: 100%;
 }
